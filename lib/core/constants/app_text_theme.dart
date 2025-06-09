@@ -43,15 +43,15 @@ class AppTextTheme {
           fontWeight: FontWeight.w300,
         ),
         bodyLarge: GoogleFonts.ibmPlexSerif(
-          fontSize: 24,
+          fontSize: 18,
           fontWeight: FontWeight.w400,
         ),
         bodyMedium: GoogleFonts.ibmPlexSerif(
-          fontSize: 20,
+          fontSize: 14,
           fontWeight: FontWeight.w400,
         ),
         bodySmall: GoogleFonts.ibmPlexSerif(
-          fontSize: 18,
+          fontSize: 12,
           fontWeight: FontWeight.w300,
         ),
         labelLarge: GoogleFonts.ibmPlexSerif(

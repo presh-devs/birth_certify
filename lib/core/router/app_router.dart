@@ -1,5 +1,6 @@
 import 'package:birth_certify/features/auth/presentation/pages/login_page.dart';
 import 'package:birth_certify/features/certificate/presentation/pages/certificate_list_page.dart';
+import 'package:birth_certify/features/certificate/presentation/widgets/shell_page.dart';
 import 'package:birth_certify/features/registration/presentation/pages/registration_form_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -18,7 +19,7 @@ class AppRouter {
       GoRoute(
         path: '/',
         name: 'dashboard',
-        builder: (context, state) =>  CertificateListPage(),
+        builder: (context, state) =>  ShellPage(),
         routes: [
           GoRoute(
             path: 'certificates',

@@ -17,9 +17,6 @@ class AppTheme {
       secondaryContainer: AppColors.secondary100,
       onSecondaryContainer: AppColors.secondary400,
 
-      background: AppColors.neutral100,
-      onBackground: AppColors.neutral900,
-
       surface: AppColors.neutral100,
       onSurface: AppColors.neutral900,
 

@@ -1,0 +1,28 @@
+{
+  "flutter": {
+    "platforms": {
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "birth-certify",
+          "configurations": {
+            "web": "1:667655621352:web:39df323774b2cd1d08975d"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "lib/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

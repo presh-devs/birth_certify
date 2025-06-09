@@ -1,6 +1,7 @@
 import 'package:birth_certify/features/certificate/presentation/providers/certificate_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CertificateListPage extends ConsumerWidget {
   const CertificateListPage({super.key});
@@ -31,16 +32,25 @@ class CertificateListPage extends ConsumerWidget {
         }).toList();
 
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(70),
-        child: _TopNavBar(),
-      ),
+      // appBar: PreferredSize(
+      //   preferredSize: const Size.fromHeight(70),
+      //   child: ShellPage(),
+      // ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Text(
+                'Dashboard',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: GoogleFonts.albertSans().fontFamily,
+                ),
+              ),
+              const SizedBox(height: 16),
               _DashboardBanner(name: 'Dara W.'),
               const SizedBox(height: 32),
 
@@ -148,30 +158,6 @@ class CertificateListPage extends ConsumerWidget {
   }
 }
 
-class _TopNavBar extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return AppBar(
-      backgroundColor: Colors.white,
-      foregroundColor: Colors.black87,
-      elevation: 0.5,
-      title: Row(
-        children: [
-          const Text("LOGO", style: TextStyle(fontWeight: FontWeight.bold)),
-          const Spacer(),
-          TextButton(onPressed: () {}, child: const Text("Home")),
-          TextButton(onPressed: () {}, child: const Text("Register")),
-          TextButton(onPressed: () {}, child: const Text("Certificates")),
-          const SizedBox(width: 16),
-          const CircleAvatar(child: Text('DA')),
-          const SizedBox(width: 8),
-          const Text('Dara Williams'),
-        ],
-      ),
-    );
-  }
-}
-
 class _DashboardBanner extends StatelessWidget {
   final String name;
 
@@ -181,14 +167,35 @@ class _DashboardBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
+      height: 227,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: const Color(0xFF0A2942),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Text(
-        'Hello, $name.\nEasily register new births, access digital certificates, all in one trusted place.',
-        style: const TextStyle(color: Colors.white, fontSize: 20),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Hello, $name.',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 40,
+              fontFamily: GoogleFonts.manrope().fontFamily,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          Text(
+            'Easily register new births, access digital certificates, all in one trusted place.',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontFamily: GoogleFonts.manrope().fontFamily,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ],
       ),
     );
   }
