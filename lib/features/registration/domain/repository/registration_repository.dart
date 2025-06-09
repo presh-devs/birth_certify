@@ -1,5 +1,6 @@
-import '../models/registration_model.dart';
+
+import 'package:birth_certify/features/registration/domain/models/registration_model.dart';
 
 abstract class RegistrationRepository {
-  Future<void> registerBirth(RegistrationRequest request);
+  Future<void> submitRegistration(RegistrationRequest request, String submittedBy);
 }

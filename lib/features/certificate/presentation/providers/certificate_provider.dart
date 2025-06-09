@@ -5,10 +5,15 @@ import '../../domain/models/certificate_model.dart';
 import '../../domain/repository/certificate_repository.dart';
 
 final certificateRepositoryProvider = Provider<CertificateRepository>((ref) {
-  return CertificateRepositoryImpl(CertificateRemoteDataSource());
+  return CertificateRepositoryImpl(CertificateFirestoreDatasource());
 });
 
 final certificateListProvider = FutureProvider<List<Certificate>>((ref) async {
-  final repository = ref.read(certificateRepositoryProvider);
-  return repository.fetchCertificates();
+  final repo = ref.read(certificateRepositoryProvider);
+  return repo.fetchCertificates();
+});
+
+final addCertificateProvider = Provider.family<Future<void>, Certificate>((ref, cert) {
+  final repo = ref.read(certificateRepositoryProvider);
+  return repo.addCertificate(cert);
 });

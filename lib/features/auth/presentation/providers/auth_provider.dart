@@ -1,12 +1,11 @@
 import 'package:birth_certify/features/auth/data/datasource/auth_remote_datasource.dart';
 import 'package:birth_certify/features/auth/data/repository/auth_repository_impl.dart';
 import 'package:birth_certify/features/auth/domain/repository/auth_repository.dart';
+import 'package:birth_certify/features/auth/presentation/providers/auth_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'auth_state.dart';
-
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepositoryImpl(AuthRemoteDataSource());
+  return AuthRepositoryImpl(AuthFirebaseDataSource());
 });
 
 final authProvider = StateNotifierProvider<AuthController, AuthState>((ref) {
@@ -33,6 +32,20 @@ class AuthController extends StateNotifier<AuthState> {
         state = state.copyWith(isLoading: false, isLoggedIn: true);
       } else {
         state = state.copyWith(isLoading: false, error: 'Invalid credentials');
+      }
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: 'Something went wrong');
+    }
+  }
+  Future<void> logout() async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final success = await _repository.logout();
+      if (success) {
+        state = state.copyWith(isLoading: false, isLoggedIn: false);
+      } else {
+        state = state.copyWith(isLoading: false, error: 'Logout failed');
       }
     } catch (e) {
       state = state.copyWith(isLoading: false, error: 'Something went wrong');

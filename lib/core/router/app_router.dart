@@ -1,43 +1,59 @@
-import 'package:birth_certify/features/auth/presentation/pages/login_page.dart';
-import 'package:birth_certify/features/certificate/presentation/pages/certificate_list_page.dart';
+
+import 'dart:async';
 import 'package:birth_certify/features/certificate/presentation/widgets/shell_page.dart';
-import 'package:birth_certify/features/registration/presentation/pages/registration_form_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../features/auth/presentation/pages/login_page.dart';
+import '../../features/registration/presentation/pages/registration_form_page.dart';
+import '../../features/auth/presentation/providers/auth_status_provider.dart';
 
 
 class AppRouter {
-  static final GoRouter router = GoRouter(
-    initialLocation: '/login',
-    routes: [
-      GoRoute(
-        path: '/login',
-        name: 'login',
-        builder: (context, state) =>  LoginPage(),
-      ),
-      GoRoute(
-        path: '/',
-        name: 'dashboard',
-        builder: (context, state) =>  ShellPage(),
-        routes: [
-          GoRoute(
-            path: 'certificates',
-            name: 'certificates',
-            builder: (context, state) =>  CertificateListPage(),
-          ),
-          GoRoute(
-            path: 'register',
-            name: 'register',
-            builder: (context, state) =>  RegistrationFormPage(),
-          ),
-        ],
-      ),
-    ],
-    errorBuilder: (context, state) => Scaffold(
-      body: Center(
-        child: Text('404: Page not found\n${state.error}', textAlign: TextAlign.center),
-      ),
-    ),
-  );
+  static GoRouter createRouter(WidgetRef ref) {
+    return GoRouter(
+      initialLocation: '/login',
+      refreshListenable: GoRouterRefreshStream(ref.watch(authStatusProvider.stream)),
+      redirect: (context, state) {
+        final user = ref.read(authStatusProvider).asData?.value;
+        final isLoggedIn = user != null;
+        final loggingIn = state.matchedLocation == '/login';
+
+        if (!isLoggedIn && !loggingIn) return '/login';
+        if (isLoggedIn && loggingIn) return '/';
+        return null;
+      },
+      routes: [
+        GoRoute(
+          path: '/login',
+          builder: (context, state) => const LoginPage(),
+        ),
+        GoRoute(
+          path: '/',
+          builder: (context, state) => const ShellPage(),
+        ),
+        GoRoute(
+          path: '/register',
+          builder: (context, state) => const RegistrationFormPage(),
+        ),
+      ],
+    );
+  }
+}
+
+
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    _subscription = stream.asBroadcastStream().listen((_) {
+      notifyListeners();
+    });
+  }
+
+  late final StreamSubscription<dynamic> _subscription;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
 }

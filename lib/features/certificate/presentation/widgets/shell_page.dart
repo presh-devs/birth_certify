@@ -1,13 +1,16 @@
+import 'package:birth_certify/features/auth/presentation/providers/auth_provider.dart';
+import 'package:birth_certify/features/auth/presentation/providers/auth_status_provider.dart';
 import 'package:birth_certify/features/certificate/presentation/pages/certificate_list_page.dart';
 import 'package:birth_certify/features/registration/presentation/pages/registration_form_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class ShellPage extends StatelessWidget {
+class ShellPage extends ConsumerWidget {
   const ShellPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -69,6 +72,33 @@ class ShellPage extends StatelessWidget {
 
                       PopupMenuItem(
                         value: 'logout',
+                        onTap:
+                            () async => await showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text('Logout'),
+                                  content: const Text(
+                                    'Are you sure you want to logout?',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed:
+                                          () => Navigator.of(context).pop(),
+                                      child: const Text('No'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () async {
+                                        await ref
+                                            .read(authProvider.notifier)
+                                            .logout();
+                                      },
+                                      child: const Text('Yes'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
                         child: Row(
                           children: const [
                             Icon(Icons.logout),
@@ -80,9 +110,7 @@ class ShellPage extends StatelessWidget {
                     ];
                   },
                 ),
-                onTap: () {
-                  // Handle notifications tap
-                },
+                onTap: () async {},
               ),
             ),
           ],

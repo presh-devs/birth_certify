@@ -22,11 +22,11 @@ class CertificateListPage extends ConsumerWidget {
         certificates.map((cert) {
           return DataRow(
             cells: [
-              DataCell(Text(cert.name)),
-              DataCell(Text(cert.dob)),
+              DataCell(Text(cert.firstName)),
+              DataCell(Text(cert.dateOfBirth.toString())),
               DataCell(Text(cert.placeOfBirth)),
               DataCell(Text(cert.nin)),
-              DataCell(Text(cert.dateRegistered)),
+              DataCell(Text(cert.registeredAt.toString())),
             ],
           );
         }).toList();
