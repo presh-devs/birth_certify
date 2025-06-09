@@ -1,0 +1,54 @@
+<svg width="736" height="982" viewBox="0 0 736 982" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_71_17)" filter="url(#filter0_n_71_17)">
+<rect width="736" height="982" fill="url(#paint0_linear_71_17)"/>
+<g style="mix-blend-mode:color-dodge" opacity="0.25">
+<g clip-path="url(#clip1_71_17)">
+<path d="M608.292 492H289.449L448.861 768.124H767.703L608.292 492Z" stroke="#E3C567" stroke-width="2"/>
+<mask id="path-2-inside-1_71_17" fill="white">
+<path d="M769.435 769.124L930 491L769.435 212.876L608.87 491"/>
+</mask>
+<path d="M930 491L931.732 490L932.309 491L931.732 492L930 491ZM769.435 212.876L767.703 211.876L769.435 208.876L771.167 211.876L769.435 212.876ZM769.435 769.124L767.703 768.124L928.268 490L930 491L931.732 492L771.167 770.124L769.435 769.124ZM930 491L928.268 492L767.703 213.876L769.435 212.876L771.167 211.876L931.732 490L930 491ZM769.435 212.876L771.167 213.876L610.602 492L608.87 491L607.138 490L767.703 211.876L769.435 212.876Z" fill="#E3C567" mask="url(#path-2-inside-1_71_17)"/>
+<path d="M448.283 212.876L287.717 491" stroke="#E3C567" stroke-width="2"/>
+<path d="M126.575 770.124H-192.268L-32.8569 1046.25H285.986L126.575 770.124Z" stroke="#E3C567" stroke-width="2"/>
+<path d="M287.717 488.19L127.152 769.124" stroke="#E3C567" stroke-width="2"/>
+<path d="M446.68 766.446L286.115 1047.38" stroke="#E3C567" stroke-width="2"/>
+<path d="M126.575 213.876H-192.268L-32.8569 490H285.986L126.575 213.876Z" stroke="#E3C567" stroke-width="2"/>
+<path d="M448.283 212.876L287.717 -65.2482L127.152 212.876" stroke="#E3C567" stroke-width="2"/>
+<mask id="path-10-inside-2_71_17" fill="white">
+<path d="M287.717 -65.2482H-33.4349L-194 212.876"/>
+</mask>
+<path d="M-33.4349 -65.2482L-35.167 -66.2481L-34.5897 -67.2482H-33.4349V-65.2482ZM287.717 -65.2482V-63.2482H-33.4349V-65.2482V-67.2482H287.717V-65.2482ZM-33.4349 -65.2482L-31.7029 -64.2482L-192.268 213.876L-194 212.876L-195.732 211.876L-35.167 -66.2481L-33.4349 -65.2482Z" fill="#E3C567" mask="url(#path-10-inside-2_71_17)"/>
+<path d="M769.83 212.81H448.678" stroke="#E3C567" stroke-width="2"/>
+</g>
+</g>
+</g>
+<defs>
+<filter id="filter0_n_71_17" x="0" y="0" width="736" height="982" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feTurbulence type="fractalNoise" baseFrequency="0.5 0.5" stitchTiles="stitch" numOctaves="3" result="noise" seed="4011" />
+<feColorMatrix in="noise" type="luminanceToAlpha" result="alphaNoise" />
+<feComponentTransfer in="alphaNoise" result="coloredNoise1">
+<feFuncA type="discrete" tableValues="1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "/>
+</feComponentTransfer>
+<feComposite operator="in" in2="shape" in="coloredNoise1" result="noise1Clipped" />
+<feFlood flood-color="rgba(38, 38, 38, 0.04)" result="color1Flood" />
+<feComposite operator="in" in2="noise1Clipped" in="color1Flood" result="color1" />
+<feMerge result="effect1_noise_71_17">
+<feMergeNode in="shape" />
+<feMergeNode in="color1" />
+</feMerge>
+</filter>
+<linearGradient id="paint0_linear_71_17" x1="-153.82" y1="-299" x2="1195.24" y2="178.269" gradientUnits="userSpaceOnUse">
+<stop stop-color="#ECF0F9"/>
+<stop offset="0.5" stop-color="#A3D5FF"/>
+<stop offset="1" stop-color="#658BCD"/>
+</linearGradient>
+<clipPath id="clip0_71_17">
+<rect width="736" height="982" fill="white"/>
+</clipPath>
+<clipPath id="clip1_71_17">
+<rect width="1124" height="1124" fill="white" transform="matrix(0 -1 -1 0 930 1053)"/>
+</clipPath>
+</defs>
+</svg>
