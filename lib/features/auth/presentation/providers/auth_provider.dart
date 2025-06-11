@@ -1,5 +1,6 @@
 import 'package:birth_certify/features/auth/data/datasource/auth_remote_datasource.dart';
 import 'package:birth_certify/features/auth/data/repository/auth_repository_impl.dart';
+import 'package:birth_certify/features/auth/domain/models/user_model.dart';
 import 'package:birth_certify/features/auth/domain/repository/auth_repository.dart';
 import 'package:birth_certify/features/auth/presentation/providers/auth_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +14,10 @@ final authProvider = StateNotifierProvider<AuthController, AuthState>((ref) {
   return AuthController(repo);
 });
 
+
+final currentUserProvider = FutureProvider<UserModel?>((ref) async {
+  return await ref.watch(authRepositoryProvider).fetchCurrentUserDetails();
+});
 class AuthController extends StateNotifier<AuthState> {
   final AuthRepository _repository;
 

@@ -10,7 +10,13 @@ class CertificateFirestoreDatasource {
   }
 
   Future<List<Certificate>> getCertificates() async {
-    final snapshot = await _collection.orderBy('registered_at', descending: true).get();
+    final snapshot = await _collection.orderBy('created_at', descending: true).get();
+    if (snapshot.docs.isEmpty) {
+     print('Eempty certificate collection');
+    }
+    // Debugging: Print the number of certificates fetched
+    final certificates = snapshot.docs.map((doc) => Certificate.fromJson(doc.data())).toList();
+    print(certificates.length);
     return snapshot.docs.map((doc) => Certificate.fromJson(doc.data())).toList();
   }
   Future<void> createCertificateFromRegistration({

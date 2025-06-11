@@ -1,3 +1,4 @@
+import 'package:birth_certify/features/auth/presentation/providers/auth_provider.dart';
 import 'package:birth_certify/features/certificate/presentation/providers/certificate_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +10,7 @@ class CertificateListPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final certsAsync = ref.watch(certificateListProvider);
+    final user = ref.watch(currentUserProvider);
 
     if (certsAsync.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -22,7 +24,7 @@ class CertificateListPage extends ConsumerWidget {
         certificates.map((cert) {
           return DataRow(
             cells: [
-              DataCell(Text(cert.firstName)),
+              DataCell(Text(cert.name)),
               DataCell(Text(cert.dateOfBirth.toString())),
               DataCell(Text(cert.placeOfBirth)),
               DataCell(Text(cert.nin)),
@@ -51,7 +53,12 @@ class CertificateListPage extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              _DashboardBanner(name: 'Dara W.'),
+            user.when(
+                data: (user) =>  _DashboardBanner(name: '${user!.firstName} ${user.lastName.substring(0,1)}'),
+                loading: () => const Text('Loading user...'),
+                error: (e, _) => Text('Error: $e'),
+              ),
+             
               const SizedBox(height: 32),
 
               const Text(

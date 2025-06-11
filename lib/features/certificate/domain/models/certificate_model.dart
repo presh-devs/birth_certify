@@ -1,24 +1,24 @@
 class Certificate {
-  final String firstName;
-  final String lastName;
+  final String name;
+
   final String dateOfBirth;
   final String placeOfBirth;
   final String nin;
   final DateTime registeredAt;
+  final String? registrationId;
 
   Certificate({
-    required this.firstName,
-    required this.lastName,
+    required this.name,
     required this.dateOfBirth,
     required this.placeOfBirth,
     required this.nin,
     required this.registeredAt,
+    required this.registrationId,
   });
 
   Map<String, dynamic> toJson() {
     return {
-      'first_name': firstName,
-      'last_name': lastName,
+      'name': name,
       'date_of_birth': dateOfBirth,
       'place_of_birth': placeOfBirth,
       'nin': nin,
@@ -28,12 +28,12 @@ class Certificate {
 
   factory Certificate.fromJson(Map<String, dynamic> json) {
     return Certificate(
-      firstName: json['first_name'],
-      lastName: json['last_name'],
+      registrationId: json['registration_id'],
+      name: json['name'],
       dateOfBirth: json['date_of_birth'],
       placeOfBirth: json['place_of_birth'],
       nin: json['nin'],
-      registeredAt: DateTime.parse(json['registered_at']),
+      registeredAt: DateTime.parse(json['created_at']),
     );
   }
 }

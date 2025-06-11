@@ -11,6 +11,15 @@ class ShellPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+
+    final userAsync = ref.watch(currentUserProvider);
+       if (userAsync.isLoading) {
+      return const Center(child: SizedBox());
+    }
+    if (userAsync.hasError) {
+      return SizedBox();
+    }
+   final user = userAsync.value;
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -19,9 +28,12 @@ class ShellPage extends ConsumerWidget {
           foregroundColor: Colors.black87,
           elevation: 0.5,
           centerTitle: true,
-          leading: const Text(
-            "LOGO",
-            style: TextStyle(fontWeight: FontWeight.bold),
+          leading: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: const Text(
+              "LOGO",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
           title: SizedBox(
             width: MediaQuery.sizeOf(context).width * 0.3,
@@ -49,13 +61,25 @@ class ShellPage extends ConsumerWidget {
           ),
           actions: [
             SizedBox(
-              width: 250,
+              width: 320,
               child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.blue,
-                  child: const Text('DA'),
+                leading: Container(
+                decoration: BoxDecoration(
+                    color: Colors.blue,
+                    shape: BoxShape.circle
                 ),
-                title: const Text("Dara Williams"),
+                  child:  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text('${user?.firstName.substring(0, 1)}${user?.lastName.substring(0, 1)}', 
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontFamily: GoogleFonts.albertSans().fontFamily,
+                      ),
+                    ),
+                  ),
+                ),
+                title:  Text("${user?.firstName} ${user?.lastName}"),
                 trailing: PopupMenuButton(
                   itemBuilder: (context) {
                     return [
