@@ -168,16 +168,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ),
                         const SizedBox(height: 20),
 
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text("Don’t have an account?"),
-                            TextButton(
-                              onPressed: () {},
-                              child: const Text('Sign up'),
-                            ),
-                          ],
-                        ),
+                        // Row(
+                        //   mainAxisAlignment: MainAxisAlignment.center,
+                        //   children: [
+                        //     const Text("Don’t have an account?"),
+                        //     TextButton(
+                        //       onPressed: () {},
+                        //       child: const Text('Sign up'),
+                        //     ),
+                        //   ],
+                        // ),
                       ],
                     ),
                   ),
