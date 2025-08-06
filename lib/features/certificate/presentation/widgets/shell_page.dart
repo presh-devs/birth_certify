@@ -11,9 +11,9 @@ class ShellPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     final userAsync = ref.watch(currentUserProvider);
        if (userAsync.isLoading) {
+print('here');
       return const Center(child: SizedBox());
     }
     if (userAsync.hasError) {

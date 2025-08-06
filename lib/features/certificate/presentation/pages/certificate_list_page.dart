@@ -54,7 +54,7 @@ class CertificateListPage extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
             user.when(
-                data: (user) =>  _DashboardBanner(name: '${user!.firstName} ${user.lastName.substring(0,1)}'),
+                data: (user) =>  _DashboardBanner(name: '${user?.firstName} ${user?.lastName.substring(0,1)}'),
                 loading: () => const Text('Loading user...'),
                 error: (e, _) => Text('Error: $e'),
               ),

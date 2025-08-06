@@ -26,14 +26,26 @@ class AuthFirebaseDataSource {
   }
 
   Future<UserModel?> fetchCurrentUserDetails() async {
+  try {
     final uid = _auth.currentUser?.uid;
-    if (uid == null) return null;
+    if (uid == null) {
+      print('Error: No user is currently signed in.');
+      return null;
+    }
 
-    final doc =
-        await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
 
-    if (!doc.exists) return null;
+    if (!doc.exists) {
+      print('Error: No user document found for uid: $uid');
+      return null;
+    }
 
     return UserModel.fromJson(doc.data()!);
+  } catch (e, stackTrace) {
+    print('Exception occurred while fetching user details: $e');
+    print('StackTrace: $stackTrace');
+    return null;
   }
+}
+
 }
