@@ -42,9 +42,9 @@ class _RegistrationFormPageState extends ConsumerState<RegistrationFormPage> {
         documentUrl: null,
       );
 
-      await ref.read(
-        submitRegistrationProvider((request, currentUser?.uid ?? 'unknown')),
-      );
+      // await ref.read(
+      //   submitRegistrationProvider((request, currentUser?.uid ?? 'unknown')),
+      // );
     };
   }
 

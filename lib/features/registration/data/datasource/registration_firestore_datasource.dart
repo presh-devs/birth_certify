@@ -1,3 +1,4 @@
+import 'package:birth_certify/features/registration/data/repository/enhanced_registration_repository.dart';
 import 'package:birth_certify/features/registration/domain/models/registration_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -6,7 +7,7 @@ class RegistrationFirestoreDatasource {
     'birth_registrations',
   );
   Future<String> submitAndGetId(
-    RegistrationRequest request,
+    OriginalRegistrationRequest request,
     String submittedBy,
   ) async {
     final data =

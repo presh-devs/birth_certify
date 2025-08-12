@@ -2,6 +2,7 @@ import 'package:birth_certify/features/auth/presentation/providers/auth_provider
 import 'package:birth_certify/features/auth/presentation/providers/auth_status_provider.dart';
 import 'package:birth_certify/features/certificate/presentation/pages/certificate_list_page.dart';
 import 'package:birth_certify/features/registration/presentation/pages/registration_form_page.dart';
+import 'package:birth_certify/features/registration/presentation/widgets/enhanced_registration_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -140,7 +141,7 @@ print('here');
           ],
         ),
         body: TabBarView(
-          children: [CertificateListPage(), RegistrationFormPage()],
+          children: [CertificateListPage(), EnhancedRegistrationForm()],
         ),
       ),
     );
