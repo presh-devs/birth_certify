@@ -1,6 +1,8 @@
-
 // lib/features/registration/presentation/widgets/enhanced_registration_form.dart
 import 'dart:io';
+import 'package:birth_certify/features/auth/presentation/providers/auth_provider.dart';
+import 'package:birth_certify/features/certificate/presentation/providers/certificate_provider.dart';
+import 'package:birth_certify/features/registration/domain/models/enhanced_registration_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
@@ -16,9 +18,10 @@ class EnhancedRegistrationForm extends ConsumerStatefulWidget {
       _EnhancedRegistrationFormState();
 }
 
-class _EnhancedRegistrationFormState extends ConsumerState<EnhancedRegistrationForm> {
+class _EnhancedRegistrationFormState
+    extends ConsumerState<EnhancedRegistrationForm> {
   final _formKey = GlobalKey<FormState>();
-  
+
   // Controllers (same as your existing form)
   final firstName = TextEditingController();
   final middleName = TextEditingController();
@@ -32,7 +35,7 @@ class _EnhancedRegistrationFormState extends ConsumerState<EnhancedRegistrationF
   final motherNIN = TextEditingController();
   final fatherNIN = TextEditingController();
   final wallet = TextEditingController();
-  
+
   File? supportingDocument;
   String? supportingDocumentName;
   bool isSubmitting = false;
@@ -71,9 +74,9 @@ class _EnhancedRegistrationFormState extends ConsumerState<EnhancedRegistrationF
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error picking file: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error picking file: $e')));
     }
   }
 
@@ -83,13 +86,13 @@ class _EnhancedRegistrationFormState extends ConsumerState<EnhancedRegistrationF
       setState(() {
         wallet.text = walletData.address;
       });
-      
+
       // Show wallet details dialog
       _showWalletDialog(walletData);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error generating wallet: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error generating wallet: $e')));
     }
   }
 
@@ -145,37 +148,36 @@ class _EnhancedRegistrationFormState extends ConsumerState<EnhancedRegistrationF
     setState(() {
       isSubmitting = true;
     });
-
+    final user = await ref.read(currentUserProvider.future);
     try {
-      final birthData = {
-        'firstName': firstName.text,
-        'middleName': middleName.text,
-        'lastName': lastName.text,
-        'placeOfBirth': placeOfBirth.text,
-        'dateOfBirth': dateOfBirth.text,
-        'motherFirstName': motherFirstName.text,
-        'motherLastName': motherLastName.text,
-        'fatherFirstName': fatherFirstName.text,
-        'fatherLastName': fatherLastName.text,
-        'motherNIN': motherNIN.text,
-        'fatherNIN': fatherNIN.text,
-        'wallet': wallet.text,
-      };
+      // Create the enhanced request
+      final enhancedRequest = EnhancedRegistrationRequest(
+        firstName: firstName.text,
+        middleName: middleName.text,
+        lastName: lastName.text,
+        placeOfBirth: placeOfBirth.text,
+        dateOfBirth: dateOfBirth.text,
+        motherFirstName: motherFirstName.text,
+        motherLastName: motherLastName.text,
+        fatherFirstName: fatherFirstName.text,
+        fatherLastName: fatherLastName.text,
+        motherNIN: motherNIN.text,
+        fatherNIN: fatherNIN.text,
+        wallet: wallet.text,
+        supportingDocument: supportingDocument,
+      );
 
-      final response = await ref.read(
-        submitRegistrationWithStorachaProvider((
-          birthData: birthData,
-          supportingDocument: supportingDocument,
+      // Use ONLY the enhanced repository (includes Firestore saving)
+      final result = await ref.read(
+        submitEnhancedRegistrationProvider((
+          request: enhancedRequest,
+          submittedBy: user!.id,
         )).future,
       );
 
-      setState(() {
-        lastUploadResponse = response;
-      });
-
-      _showSuccessDialog(response);
+      // Show success dialog and clear form
+      _showEnhancedSuccessDialog(result);
       _clearForm();
-
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -190,7 +192,7 @@ class _EnhancedRegistrationFormState extends ConsumerState<EnhancedRegistrationF
     }
   }
 
-  void _showSuccessDialog(StorachaUploadResponse response) {
+  void _showEnhancedSuccessDialog(RegistrationResult result) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -201,38 +203,71 @@ class _EnhancedRegistrationFormState extends ConsumerState<EnhancedRegistrationF
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Certificate ID: ${response.certificateId}'),
+                Text('Certificate ID: ${result.certificateId}'),
                 const SizedBox(height: 16),
-                
-                const Text('📜 Birth Certificate:', style: TextStyle(fontWeight: FontWeight.bold)),
-                Text('IPFS CID: ${response.certificate.cid}'),
+
+                const Text(
+                  '📜 Birth Certificate:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text('IPFS CID: ${result.certificateCid}'),
                 InkWell(
-                  onTap: () => _launchUrl(response.certificate.gatewayUrl),
+                  onTap: () => _launchUrl(result.certificateUrl),
                   child: Text(
                     'View Certificate',
-                    style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
+                    style: TextStyle(
+                      color: Colors.blue,
+                      decoration: TextDecoration.underline,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
-                
-                if (response.nft != null) ...[
-                  const Text('🎨 NFT Minted:', style: TextStyle(fontWeight: FontWeight.bold)),
-                  Text('Token ID: ${response.nft!.tokenId}'),
-                  Text('Transaction: ${response.nft!.transactionHash.substring(0, 20)}...'),
-                  Text('Owner: ${response.nft!.ownerAddress.substring(0, 20)}...'),
+
+                if (result.nftInfo != null) ...[
+                  const Text(
+                    '🎨 NFT Minted:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text('Token ID: ${result.nftInfo!.tokenId}'),
+                  Text(
+                    'Transaction: ${result.nftInfo!.transactionHash.substring(0, 20)}...',
+                  ),
+                  Text(
+                    'Owner: ${result.nftInfo!.ownerAddress.substring(0, 20)}...',
+                  ),
+                  const SizedBox(height: 12),
+                ] else ...[
+                  const Text(
+                    '⚠️ NFT minting failed (insufficient gas), but certificate was created successfully!',
+                  ),
                   const SizedBox(height: 12),
                 ],
-                
-                if (response.supportingDocument != null) ...[
-                  const Text('📄 Supporting Document:', style: TextStyle(fontWeight: FontWeight.bold)),
+
+                if (result.supportingDocumentUrl != null) ...[
+                  const Text(
+                    '📄 Supporting Document:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   InkWell(
-                    onTap: () => _launchUrl(response.supportingDocument!.gatewayUrl),
+                    onTap: () => _launchUrl(result.supportingDocumentUrl!),
                     child: Text(
                       'View Document',
-                      style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
+                      style: TextStyle(
+                        color: Colors.blue,
+                        decoration: TextDecoration.underline,
+                      ),
                     ),
                   ),
                 ],
+
+                const SizedBox(height: 16),
+                const Text(
+                  '✅ Record saved to Firestore successfully!',
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
           ),
@@ -244,7 +279,7 @@ class _EnhancedRegistrationFormState extends ConsumerState<EnhancedRegistrationF
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                _launchUrl(response.certificate.gatewayUrl);
+                _launchUrl(result.certificateUrl);
               },
               child: const Text('View Certificate'),
             ),
@@ -253,22 +288,137 @@ class _EnhancedRegistrationFormState extends ConsumerState<EnhancedRegistrationF
       },
     );
   }
+  // Future<void> _submitRegistration() async {
+  //   if (!_formKey.currentState!.validate()) return;
+
+  //   setState(() {
+  //     isSubmitting = true;
+  //   });
+
+  //   try {
+  //     final birthData = {
+  //       'firstName': firstName.text,
+  //       'middleName': middleName.text,
+  //       'lastName': lastName.text,
+  //       'placeOfBirth': placeOfBirth.text,
+  //       'dateOfBirth': dateOfBirth.text,
+  //       'motherFirstName': motherFirstName.text,
+  //       'motherLastName': motherLastName.text,
+  //       'fatherFirstName': fatherFirstName.text,
+  //       'fatherLastName': fatherLastName.text,
+  //       'motherNIN': motherNIN.text,
+  //       'fatherNIN': fatherNIN.text,
+  //       'wallet': wallet.text,
+  //     };
+
+  //     final response = await ref.read(
+  //       submitRegistrationWithStorachaProvider((
+  //         birthData: birthData,
+  //         supportingDocument: supportingDocument,
+  //       )).future,
+  //     );
+
+  //     setState(() {
+  //       lastUploadResponse = response;
+  //     });
+
+  //     _showSuccessDialog(response);
+  //     _clearForm();
+
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text('Registration failed: $e'),
+  //         backgroundColor: Colors.red,
+  //       ),
+  //     );
+  //   } finally {
+  //     setState(() {
+  //       isSubmitting = false;
+  //     });
+  //   }
+  // }
+
+  // void _showSuccessDialog(StorachaUploadResponse response) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: const Text('🎉 Registration Successful!'),
+  //         content: SingleChildScrollView(
+  //           child: Column(
+  //             mainAxisSize: MainAxisSize.min,
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               Text('Certificate ID: ${response.certificateId}'),
+  //               const SizedBox(height: 16),
+
+  //               const Text('📜 Birth Certificate:', style: TextStyle(fontWeight: FontWeight.bold)),
+  //               Text('IPFS CID: ${response.certificate.cid}'),
+  //               InkWell(
+  //                 onTap: () => _launchUrl(response.certificate.gatewayUrl),
+  //                 child: Text(
+  //                   'View Certificate',
+  //                   style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
+  //                 ),
+  //               ),
+  //               const SizedBox(height: 12),
+
+  //               if (response.nft != null) ...[
+  //                 const Text('🎨 NFT Minted:', style: TextStyle(fontWeight: FontWeight.bold)),
+  //                 Text('Token ID: ${response.nft!.tokenId}'),
+  //                 Text('Transaction: ${response.nft!.transactionHash.substring(0, 20)}...'),
+  //                 Text('Owner: ${response.nft!.ownerAddress.substring(0, 20)}...'),
+  //                 const SizedBox(height: 12),
+  //               ],
+
+  //               if (response.supportingDocument != null) ...[
+  //                 const Text('📄 Supporting Document:', style: TextStyle(fontWeight: FontWeight.bold)),
+  //                 InkWell(
+  //                   onTap: () => _launchUrl(response.supportingDocument!.gatewayUrl),
+  //                   child: Text(
+  //                     'View Document',
+  //                     style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
+  //                   ),
+  //                 ),
+  //               ],
+  //             ],
+  //           ),
+  //         ),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () => Navigator.of(context).pop(),
+  //             child: const Text('Close'),
+  //           ),
+  //           ElevatedButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //               _launchUrl(response.certificate.gatewayUrl);
+  //             },
+  //             child: const Text('View Certificate'),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   void _launchUrl(String url) {
     // You can use url_launcher package here
     // For now, just show the URL
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Certificate URL'),
-        content: SelectableText(url),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Certificate URL'),
+            content: SelectableText(url),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -325,17 +475,27 @@ class _EnhancedRegistrationFormState extends ConsumerState<EnhancedRegistrationF
                   if (snapshot.hasData) {
                     final health = snapshot.data!;
                     return Card(
-                      color: health['storacha'] == 'connected' ? Colors.green.shade50 : Colors.red.shade50,
+                      color:
+                          health['storacha'] == 'connected'
+                              ? Colors.green.shade50
+                              : Colors.red.shade50,
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Row(
                           children: [
                             Icon(
-                              health['storacha'] == 'connected' ? Icons.check_circle : Icons.error,
-                              color: health['storacha'] == 'connected' ? Colors.green : Colors.red,
+                              health['storacha'] == 'connected'
+                                  ? Icons.check_circle
+                                  : Icons.error,
+                              color:
+                                  health['storacha'] == 'connected'
+                                      ? Colors.green
+                                      : Colors.red,
                             ),
                             const SizedBox(width: 8),
-                            Text('Backend Status: ${health['storacha'] ?? 'unknown'}'),
+                            Text(
+                              'Backend Status: ${health['storacha'] ?? 'unknown'}',
+                            ),
                             const SizedBox(width: 16),
                             Text('Web3: ${health['web3'] ?? 'unknown'}'),
                           ],
@@ -371,14 +531,26 @@ class _EnhancedRegistrationFormState extends ConsumerState<EnhancedRegistrationF
                       const SizedBox(height: 16),
 
                       _buildDoubleRow(
-                        _buildField(controller: firstName, label: 'First Name *'),
-                        _buildField(controller: middleName, label: 'Middle Name'),
+                        _buildField(
+                          controller: firstName,
+                          label: 'First Name *',
+                        ),
+                        _buildField(
+                          controller: middleName,
+                          label: 'Middle Name',
+                        ),
                       ),
                       _buildDoubleRow(
                         _buildField(controller: lastName, label: 'Last Name *'),
-                        _buildField(controller: placeOfBirth, label: 'Place of Birth *'),
+                        _buildField(
+                          controller: placeOfBirth,
+                          label: 'Place of Birth *',
+                        ),
                       ),
-                      _buildField(controller: dateOfBirth, label: 'Date of Birth *'),
+                      _buildField(
+                        controller: dateOfBirth,
+                        label: 'Date of Birth *',
+                      ),
 
                       const SizedBox(height: 32),
 
@@ -392,16 +564,34 @@ class _EnhancedRegistrationFormState extends ConsumerState<EnhancedRegistrationF
                       const SizedBox(height: 16),
 
                       _buildDoubleRow(
-                        _buildField(controller: motherFirstName, label: "Mother's First Name"),
-                        _buildField(controller: motherLastName, label: "Mother's Last Name"),
+                        _buildField(
+                          controller: motherFirstName,
+                          label: "Mother's First Name",
+                        ),
+                        _buildField(
+                          controller: motherLastName,
+                          label: "Mother's Last Name",
+                        ),
                       ),
                       _buildDoubleRow(
-                        _buildField(controller: fatherFirstName, label: "Father's First Name"),
-                        _buildField(controller: fatherLastName, label: "Father's Last Name"),
+                        _buildField(
+                          controller: fatherFirstName,
+                          label: "Father's First Name",
+                        ),
+                        _buildField(
+                          controller: fatherLastName,
+                          label: "Father's Last Name",
+                        ),
                       ),
                       _buildDoubleRow(
-                        _buildField(controller: motherNIN, label: "Mother's NIN"),
-                        _buildField(controller: fatherNIN, label: "Father's NIN"),
+                        _buildField(
+                          controller: motherNIN,
+                          label: "Mother's NIN",
+                        ),
+                        _buildField(
+                          controller: fatherNIN,
+                          label: "Father's NIN",
+                        ),
                       ),
 
                       const SizedBox(height: 32),
@@ -426,7 +616,8 @@ class _EnhancedRegistrationFormState extends ConsumerState<EnhancedRegistrationF
                             child: TextFormField(
                               controller: wallet,
                               decoration: const InputDecoration(
-                                hintText: 'Enter wallet address or generate new one',
+                                hintText:
+                                    'Enter wallet address or generate new one',
                                 border: OutlineInputBorder(),
                               ),
                             ),
@@ -470,9 +661,16 @@ class _EnhancedRegistrationFormState extends ConsumerState<EnhancedRegistrationF
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.check_circle, color: Colors.green),
+                              const Icon(
+                                Icons.check_circle,
+                                color: Colors.green,
+                              ),
                               const SizedBox(width: 8),
-                              Expanded(child: Text('Selected: $supportingDocumentName')),
+                              Expanded(
+                                child: Text(
+                                  'Selected: $supportingDocumentName',
+                                ),
+                              ),
                               IconButton(
                                 onPressed: () {
                                   setState(() {
@@ -491,7 +689,11 @@ class _EnhancedRegistrationFormState extends ConsumerState<EnhancedRegistrationF
                       OutlinedButton.icon(
                         onPressed: _pickSupportingDocument,
                         icon: const Icon(Icons.upload_file),
-                        label: Text(supportingDocumentName == null ? 'Upload Document' : 'Change Document'),
+                        label: Text(
+                          supportingDocumentName == null
+                              ? 'Upload Document'
+                              : 'Change Document',
+                        ),
                       ),
 
                       const SizedBox(height: 32),
@@ -502,36 +704,43 @@ class _EnhancedRegistrationFormState extends ConsumerState<EnhancedRegistrationF
                         child: SizedBox(
                           width: 280,
                           child: ElevatedButton(
-                            onPressed: isSubmitting ? null : _submitRegistration,
+                            onPressed:
+                                isSubmitting ? null : _submitRegistration,
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               backgroundColor: Colors.blue,
                               foregroundColor: Colors.white,
                             ),
-                            child: isSubmitting
-                                ? const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            child:
+                                isSubmitting
+                                    ? const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                  Colors.white,
+                                                ),
+                                          ),
                                         ),
-                                      ),
-                                      SizedBox(width: 8),
-                                      Text('Processing...'),
-                                    ],
-                                  )
-                                : const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.rocket_launch),
-                                      SizedBox(width: 8),
-                                      Text('Submit & Mint NFT'),
-                                    ],
-                                  ),
+                                        SizedBox(width: 8),
+                                        Text('Processing...'),
+                                      ],
+                                    )
+                                    : const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.rocket_launch),
+                                        SizedBox(width: 8),
+                                        Text('Submit & Mint NFT'),
+                                      ],
+                                    ),
                           ),
                         ),
                       ),
@@ -564,10 +773,11 @@ class _EnhancedRegistrationFormState extends ConsumerState<EnhancedRegistrationF
       padding: const EdgeInsets.only(bottom: 20.0),
       child: TextFormField(
         controller: controller,
-        validator: (value) =>
-            (label.contains('*') && (value == null || value.isEmpty))
-                ? 'Required'
-                : null,
+        validator:
+            (value) =>
+                (label.contains('*') && (value == null || value.isEmpty))
+                    ? 'Required'
+                    : null,
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),
