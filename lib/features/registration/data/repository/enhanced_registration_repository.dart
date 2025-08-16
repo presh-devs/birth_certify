@@ -1,5 +1,4 @@
-
-import 'package:birth_certify/features/certificate/data/datasource/enhanced_certificate_datasource.dart';
+// lib/features/registration/data/repository/enhanced_registration_repository.dart
 
 import '../../domain/models/enhanced_registration_model.dart';
 import '../../../storacha/data/repositories/storacha_repository_impl.dart';
@@ -28,44 +27,59 @@ class EnhancedRegistrationRepositoryImpl {
         supportingDocument: request.supportingDocument,
       );
 
-      // 2. Save to Firestore with additional blockchain info
-      final registrationData = request.toJson()
-        ..addAll({
-          'submitted_at': DateTime.now().toIso8601String(),
-          'submitted_by': submittedBy,
-          'certificate_cid': storachaResponse.certificate.cid,
-          'certificate_url': storachaResponse.certificate.gatewayUrl,
-          'metadata_cid': storachaResponse.metadata.cid,
-          'metadata_url': storachaResponse.metadata.gatewayUrl,
-          'supporting_document_cid': storachaResponse.supportingDocument?.cid,
-          'supporting_document_url': storachaResponse.supportingDocument?.gatewayUrl,
-          'nft_token_id': storachaResponse.nft?.tokenId,
-          'nft_transaction_hash': storachaResponse.nft?.transactionHash,
-          'nft_contract_address': storachaResponse.nft?.contractAddress,
-          'nft_owner_address': storachaResponse.nft?.ownerAddress,
-        });
+      // 2. Create the COMPLETE registration data for Firestore
+      final completeRegistrationData = {
+        // 👈 BASIC BIRTH INFORMATION
+        'firstName': request.firstName,
+        'middleName': request.middleName,
+        'lastName': request.lastName,
+        'dateOfBirth': request.dateOfBirth,
+        'placeOfBirth': request.placeOfBirth,
+        'motherFirstName': request.motherFirstName,
+        'motherLastName': request.motherLastName,
+        'fatherFirstName': request.fatherFirstName,
+        'fatherLastName': request.fatherLastName,
+        'motherNIN': request.motherNIN,
+        'fatherNIN': request.fatherNIN,
+        'wallet': request.wallet,
+        
+        // 👈 SUBMISSION METADATA
+        'submitted_at': DateTime.now().toIso8601String(),
+        'submitted_by': submittedBy,
+        
+        // 👈 CERTIFICATE DATA
+        'certificate_id': storachaResponse.certificateId,
+        'certificate_cid': storachaResponse.certificate.cid,
+        'certificate_url': storachaResponse.certificate.gatewayUrl,
+        'documentUrl': storachaResponse.certificate.gatewayUrl, // For compatibility
+        
+        // 👈 CERTIFICATE IMAGE DATA
+        'certificate_image_cid': storachaResponse.certificateImage.cid,
+        'certificate_image_url': storachaResponse.certificateImage.gatewayUrl,
+        
+        // 👈 METADATA
+        'metadata_cid': storachaResponse.metadata.cid,
+        'metadata_url': storachaResponse.metadata.gatewayUrl,
+        
+        // 👈 SUPPORTING DOCUMENT (nullable)
+        'supporting_document_cid': storachaResponse.supportingDocument?.cid,
+        'supporting_document_url': storachaResponse.supportingDocument?.gatewayUrl,
+        
+        // 👈 NFT DATA (nullable if minting failed)
+        'nft_token_id': storachaResponse.nft?.tokenId,
+        'nft_transaction_hash': storachaResponse.nft?.transactionHash,
+        'nft_contract_address': storachaResponse.nft?.contractAddress,
+        'nft_owner_address': storachaResponse.nft?.ownerAddress,
+        'nft_image_url': storachaResponse.nft?.imageUrl,
+        'nft_metadata_url': storachaResponse.nft?.metadataUrl,
+      };
 
-      final regId = await firestore.submitAndGetId(
-        // Convert back to your original RegistrationRequest format
-        OriginalRegistrationRequest(
-          firstName: request.firstName,
-          middleName: request.middleName,
-          lastName: request.lastName,
-          placeOfBirth: request.placeOfBirth,
-          dateOfBirth: request.dateOfBirth,
-          motherFirstName: request.motherFirstName,
-          motherLastName: request.motherLastName,
-          fatherFirstName: request.fatherFirstName,
-          fatherLastName: request.fatherLastName,
-          motherNIN: request.motherNIN,
-          fatherNIN: request.fatherNIN,
-          wallet: request.wallet,
-          documentUrl: storachaResponse.certificate.gatewayUrl,
-        ),
-        submittedBy,
+      // 3. Save the COMPLETE data to Firestore
+      final regId = await firestore.submitCompleteRegistrationData(
+        completeRegistrationData,
       );
 
-      // 3. Create certificate record with blockchain info
+      // 4. Create certificate record with blockchain info
       await certificates.createEnhancedCertificateFromRegistration(
         registrationId: regId,
         name: '${request.firstName} ${request.lastName}',
@@ -77,12 +91,14 @@ class EnhancedRegistrationRepositoryImpl {
         nftInfo: storachaResponse.nft,
       );
 
-      // 4. Return comprehensive result
+      // 5. Return comprehensive result
       return RegistrationResult(
         success: true,
         certificateId: storachaResponse.certificateId,
         certificateCid: storachaResponse.certificate.cid,
         certificateUrl: storachaResponse.certificate.gatewayUrl,
+        certificateImageCid: storachaResponse.certificateImage.cid,
+        certificateImageUrl: storachaResponse.certificateImage.gatewayUrl,
         metadataCid: storachaResponse.metadata.cid,
         metadataUrl: storachaResponse.metadata.gatewayUrl,
         supportingDocumentCid: storachaResponse.supportingDocument?.cid,
@@ -93,6 +109,8 @@ class EnhancedRegistrationRepositoryImpl {
                 transactionHash: storachaResponse.nft!.transactionHash,
                 contractAddress: storachaResponse.nft!.contractAddress,
                 ownerAddress: storachaResponse.nft!.ownerAddress,
+                imageUrl: storachaResponse.nft!.imageUrl,
+                metadataUrl: storachaResponse.nft!.metadataUrl,
               )
             : null,
         registeredAt: storachaResponse.registeredAt,
@@ -101,56 +119,5 @@ class EnhancedRegistrationRepositoryImpl {
     } catch (e) {
       throw Exception('Enhanced registration failed: $e');
     }
-  }
-}
-
-// Helper class to maintain compatibility with your existing code
-class OriginalRegistrationRequest {
-  final String firstName;
-  final String middleName;
-  final String lastName;
-  final String placeOfBirth;
-  final String dateOfBirth;
-  final String motherFirstName;
-  final String motherLastName;
-  final String fatherFirstName;
-  final String fatherLastName;
-  final String motherNIN;
-  final String fatherNIN;
-  final String wallet;
-  final String? documentUrl;
-
-  OriginalRegistrationRequest({
-    required this.firstName,
-    required this.middleName,
-    required this.lastName,
-    required this.placeOfBirth,
-    required this.dateOfBirth,
-    required this.motherFirstName,
-    required this.motherLastName,
-    required this.fatherFirstName,
-    required this.fatherLastName,
-    required this.motherNIN,
-    required this.fatherNIN,
-    required this.wallet,
-    this.documentUrl,
-  });
-
-  Map<String, dynamic> toJson() {
-    return {
-      'firstName': firstName,
-      'middleName': middleName,
-      'lastName': lastName,
-      'placeOfBirth': placeOfBirth,
-      'dateOfBirth': dateOfBirth,
-      'motherFirstName': motherFirstName,
-      'motherLastName': motherLastName,
-      'fatherFirstName': fatherFirstName,
-      'fatherLastName': fatherLastName,
-      'motherNIN': motherNIN,
-      'fatherNIN': fatherNIN,
-      'wallet': wallet,
-      'documentUrl': documentUrl,
-    };
   }
 }

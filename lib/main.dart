@@ -1,3 +1,4 @@
+// lib/main.dart
 import 'package:birth_certify/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -18,9 +19,10 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-     final router = AppRouter.createRouter(ref);
+    final router = AppRouter.createRouter(ref);
+    
     return MaterialApp.router(
-      title: 'Tokenized Birth Certificate',
+      title: 'Birth Certificate Verification System',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       routerConfig: router,

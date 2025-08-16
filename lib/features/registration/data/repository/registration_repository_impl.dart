@@ -1,8 +1,4 @@
-import 'package:birth_certify/features/certificate/data/datasource/certificate_datasource.dart';
-import 'package:birth_certify/features/registration/domain/models/registration_model.dart';
 
-import '../../domain/repository/registration_repository.dart';
-import '../datasource/registration_firestore_datasource.dart';
 
 
 

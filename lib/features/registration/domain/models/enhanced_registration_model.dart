@@ -55,6 +55,8 @@ class RegistrationResult {
   final String certificateId;
   final String certificateCid;
   final String certificateUrl;
+  final String? certificateImageCid; // 👈 NEW: Image CID
+  final String? certificateImageUrl; // 👈 NEW: Image URL
   final String? metadataCid;
   final String? metadataUrl;
   final String? supportingDocumentCid;
@@ -67,6 +69,8 @@ class RegistrationResult {
     required this.certificateId,
     required this.certificateCid,
     required this.certificateUrl,
+    this.certificateImageCid, // 👈 NEW
+    this.certificateImageUrl, // 👈 NEW
     this.metadataCid,
     this.metadataUrl,
     this.supportingDocumentCid,
@@ -81,6 +85,8 @@ class RegistrationResult {
       certificateId: json['certificateId'] ?? '',
       certificateCid: json['certificate']['cid'] ?? '',
       certificateUrl: json['certificate']['gatewayUrl'] ?? '',
+      certificateImageCid: json['certificateImage']?['cid'], // 👈 NEW
+      certificateImageUrl: json['certificateImage']?['gatewayUrl'], // 👈 NEW
       metadataCid: json['metadata']?['cid'],
       metadataUrl: json['metadata']?['gatewayUrl'],
       supportingDocumentCid: json['supportingDocument']?['cid'],
@@ -96,12 +102,16 @@ class NFTInfo {
   final String transactionHash;
   final String contractAddress;
   final String ownerAddress;
+  final String? imageUrl; // 👈 NEW: Direct NFT image URL
+  final String? metadataUrl; // 👈 NEW: NFT metadata URL
 
   NFTInfo({
     required this.tokenId,
     required this.transactionHash,
     required this.contractAddress,
     required this.ownerAddress,
+    this.imageUrl, // 👈 NEW
+    this.metadataUrl, // 👈 NEW
   });
 
   factory NFTInfo.fromJson(Map<String, dynamic> json) {
@@ -110,6 +120,8 @@ class NFTInfo {
       transactionHash: json['transactionHash'] ?? '',
       contractAddress: json['contractAddress'] ?? '',
       ownerAddress: json['ownerAddress'] ?? '',
+      imageUrl: json['imageUrl'], // 👈 NEW
+      metadataUrl: json['metadataUrl'], // 👈 NEW
     );
   }
 
@@ -119,117 +131,8 @@ class NFTInfo {
       'transactionHash': transactionHash,
       'contractAddress': contractAddress,
       'ownerAddress': ownerAddress,
+      'imageUrl': imageUrl, // 👈 NEW
+      'metadataUrl': metadataUrl, // 👈 NEW
     };
   }
 }
-
-
-
-// // lib/features/registration/presentation/providers/enhanced_registration_provider.dart
-// import 'dart:io';
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import '../../domain/models/enhanced_registration_model.dart';
-// import '../../../storacha/presentation/providers/storacha_provider.dart';
-// import '../../data/repositories/enhanced_registration_repository_impl.dart';
-// import '../../data/datasource/registration_firestore_datasource.dart';
-// import '../../../certificate/data/datasource/certificate_datasource.dart';
-
-// // lib/main.dart - Integration example
-// import 'package:flutter/material.dart';
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:firebase_core/firebase_core.dart';
-// import 'features/registration/presentation/widgets/enhanced_registration_form.dart';
-
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-//   await Firebase.initializeApp();
-  
-//   runApp(
-//     const ProviderScope(
-//       child: MyApp(),
-//     ),
-//   );
-// }
-
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'Birth Certificate NFT',
-//       theme: ThemeData(
-//         primarySwatch: Colors.blue,
-//         useMaterial3: true,
-//       ),
-//       home: const BirthCertificateApp(),
-//     );
-//   }
-// }
-
-// class BirthCertificateApp extends StatelessWidget {
-//   const BirthCertificateApp({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return DefaultTabController(
-//       length: 3,
-//       child: Scaffold(
-//         appBar: AppBar(
-//           title: const Text('Birth Certificate NFT System'),
-//           bottom: const TabBar(
-//             tabs: [
-//               Tab(text: 'Register', icon: Icon(Icons.person_add)),
-//               Tab(text: 'Certificates', icon: Icon(Icons.description)),
-//               Tab(text: 'NFT Gallery', icon: Icon(Icons.token)),
-//             ],
-//           ),
-//         ),
-//         body: const TabBarView(
-//           children: [
-//             EnhancedRegistrationForm(),
-//             CertificatesPage(),
-//             NFTGalleryPage(),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// // Placeholder pages for the other tabs
-// class CertificatesPage extends StatelessWidget {
-//   const CertificatesPage({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return const Center(
-//       child: Column(
-//         mainAxisAlignment: MainAxisAlignment.center,
-//         children: [
-//           Icon(Icons.description, size: 64, color: Colors.grey),
-//           SizedBox(height: 16),
-//           Text('Certificates will be displayed here'),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-// class NFTGalleryPage extends StatelessWidget {
-//   const NFTGalleryPage({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return const Center(
-//       child: Column(
-//         mainAxisAlignment: MainAxisAlignment.center,
-//         children: [
-//           Icon(Icons.token, size: 64, color: Colors.grey),
-//           SizedBox(height: 16),
-//           Text('NFT Gallery will be displayed here'),
-//         ],
-//       ),
-//     );
-//   }
-// }

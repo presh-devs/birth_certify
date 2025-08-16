@@ -191,8 +191,7 @@ class _EnhancedRegistrationFormState
       });
     }
   }
-
-  void _showEnhancedSuccessDialog(RegistrationResult result) {
+void _showEnhancedSuccessDialog(RegistrationResult result) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -206,66 +205,252 @@ class _EnhancedRegistrationFormState
                 Text('Certificate ID: ${result.certificateId}'),
                 const SizedBox(height: 16),
 
-                const Text(
-                  '📜 Birth Certificate:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text('IPFS CID: ${result.certificateCid}'),
-                InkWell(
-                  onTap: () => _launchUrl(result.certificateUrl),
-                  child: Text(
-                    'View Certificate',
-                    style: TextStyle(
-                      color: Colors.blue,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                if (result.nftInfo != null) ...[
+                // 🖼️ Certificate Image Preview (if available)
+                if (result.certificateImageUrl != null) ...[
                   const Text(
-                    '🎨 NFT Minted:',
+                    '🖼️ Certificate Image:',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  Text('Token ID: ${result.nftInfo!.tokenId}'),
-                  Text(
-                    'Transaction: ${result.nftInfo!.transactionHash.substring(0, 20)}...',
+                  const SizedBox(height: 8),
+                  Container(
+                    height: 200,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        result.certificateImageUrl!,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(height: 8),
+                                Text('Loading certificate image...'),
+                              ],
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.image_not_supported, size: 40, color: Colors.grey),
+                                SizedBox(height: 8),
+                                Text('Image will be available shortly'),
+                                Text('IPFS propagation in progress...', 
+                                     style: TextStyle(fontSize: 12, color: Colors.grey)),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                   ),
-                  Text(
-                    'Owner: ${result.nftInfo!.ownerAddress.substring(0, 20)}...',
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _launchUrl(result.certificateImageUrl!),
+                          icon: const Icon(Icons.open_in_new, size: 16),
+                          label: const Text('View Full Image'),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                ] else ...[
-                  const Text(
-                    '⚠️ NFT minting failed (insufficient gas), but certificate was created successfully!',
-                  ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                 ],
 
+                // 📜 PDF Certificate
+                const Text(
+                  '📜 Birth Certificate PDF:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue.shade200),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.picture_as_pdf, color: Colors.red),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: Text(
+                              'Official Birth Certificate',
+                              style: TextStyle(fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'IPFS CID: ${result.certificateCid}',
+                        style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton.icon(
+                        onPressed: () => _launchUrl(result.certificateUrl),
+                        icon: const Icon(Icons.download, size: 16),
+                        label: const Text('Download PDF'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // 🎨 NFT Information
+                if (result.nftInfo != null) ...[
+                  const Text(
+                    '🎨 NFT Minted Successfully:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.green.shade200),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.token, color: Colors.green),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Token ID: ${result.nftInfo!.tokenId}',
+                              style: const TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text('Transaction: ${result.nftInfo!.transactionHash.substring(0, 20)}...'),
+                        Text('Owner: ${result.nftInfo!.ownerAddress.substring(0, 20)}...'),
+                        if (result.nftInfo!.imageUrl != null)
+                          const Text('✅ NFT image available on IPFS'),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            if (result.nftInfo!.metadataUrl != null)
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () => _launchUrl(result.nftInfo!.metadataUrl!),
+                                  icon: const Icon(Icons.info_outline, size: 16),
+                                  label: const Text('View Metadata'),
+                                ),
+                              ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () => _launchUrl(
+                                  'https://polygonscan.com/tx/${result.nftInfo!.transactionHash}'
+                                ),
+                                icon: const Icon(Icons.open_in_new, size: 16),
+                                label: const Text('View Transaction'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ] else ...[
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.orange.shade200),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.warning_amber, color: Colors.orange),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'NFT minting failed (insufficient gas or network issue), but certificate was created successfully!',
+                            style: TextStyle(color: Colors.orange),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // 📄 Supporting Document
                 if (result.supportingDocumentUrl != null) ...[
                   const Text(
                     '📄 Supporting Document:',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  InkWell(
-                    onTap: () => _launchUrl(result.supportingDocumentUrl!),
-                    child: Text(
-                      'View Document',
-                      style: TextStyle(
-                        color: Colors.blue,
-                        decoration: TextDecoration.underline,
-                      ),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.attach_file),
+                        const SizedBox(width: 8),
+                        const Expanded(
+                          child: Text('Supporting document uploaded'),
+                        ),
+                        IconButton(
+                          onPressed: () => _launchUrl(result.supportingDocumentUrl!),
+                          icon: const Icon(Icons.open_in_new, size: 16),
+                          tooltip: 'View Document',
+                        ),
+                      ],
                     ),
                   ),
+                  const SizedBox(height: 16),
                 ],
 
-                const SizedBox(height: 16),
-                const Text(
-                  '✅ Record saved to Firestore successfully!',
-                  style: TextStyle(
-                    color: Colors.green,
-                    fontWeight: FontWeight.bold,
+                // ✅ Success confirmation
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.green.shade200),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.green),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Record saved to Firestore successfully!',
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -276,70 +461,31 @@ class _EnhancedRegistrationFormState
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Close'),
             ),
+            if (result.certificateImageUrl != null)
+              OutlinedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _launchUrl(result.certificateImageUrl!);
+                },
+                child: const Text('View Image'),
+              ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 _launchUrl(result.certificateUrl);
               },
-              child: const Text('View Certificate'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Download PDF'),
             ),
           ],
         );
       },
     );
   }
-  // Future<void> _submitRegistration() async {
-  //   if (!_formKey.currentState!.validate()) return;
-
-  //   setState(() {
-  //     isSubmitting = true;
-  //   });
-
-  //   try {
-  //     final birthData = {
-  //       'firstName': firstName.text,
-  //       'middleName': middleName.text,
-  //       'lastName': lastName.text,
-  //       'placeOfBirth': placeOfBirth.text,
-  //       'dateOfBirth': dateOfBirth.text,
-  //       'motherFirstName': motherFirstName.text,
-  //       'motherLastName': motherLastName.text,
-  //       'fatherFirstName': fatherFirstName.text,
-  //       'fatherLastName': fatherLastName.text,
-  //       'motherNIN': motherNIN.text,
-  //       'fatherNIN': fatherNIN.text,
-  //       'wallet': wallet.text,
-  //     };
-
-  //     final response = await ref.read(
-  //       submitRegistrationWithStorachaProvider((
-  //         birthData: birthData,
-  //         supportingDocument: supportingDocument,
-  //       )).future,
-  //     );
-
-  //     setState(() {
-  //       lastUploadResponse = response;
-  //     });
-
-  //     _showSuccessDialog(response);
-  //     _clearForm();
-
-  //   } catch (e) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text('Registration failed: $e'),
-  //         backgroundColor: Colors.red,
-  //       ),
-  //     );
-  //   } finally {
-  //     setState(() {
-  //       isSubmitting = false;
-  //     });
-  //   }
-  // }
-
-  // void _showSuccessDialog(StorachaUploadResponse response) {
+  // void _showEnhancedSuccessDialog(RegistrationResult result) {
   //   showDialog(
   //     context: context,
   //     builder: (BuildContext context) {
@@ -350,38 +496,71 @@ class _EnhancedRegistrationFormState
   //             mainAxisSize: MainAxisSize.min,
   //             crossAxisAlignment: CrossAxisAlignment.start,
   //             children: [
-  //               Text('Certificate ID: ${response.certificateId}'),
+  //               Text('Certificate ID: ${result.certificateId}'),
   //               const SizedBox(height: 16),
 
-  //               const Text('📜 Birth Certificate:', style: TextStyle(fontWeight: FontWeight.bold)),
-  //               Text('IPFS CID: ${response.certificate.cid}'),
+  //               const Text(
+  //                 '📜 Birth Certificate:',
+  //                 style: TextStyle(fontWeight: FontWeight.bold),
+  //               ),
+  //               Text('IPFS CID: ${result.certificateCid}'),
   //               InkWell(
-  //                 onTap: () => _launchUrl(response.certificate.gatewayUrl),
+  //                 onTap: () => _launchUrl(result.certificateUrl),
   //                 child: Text(
   //                   'View Certificate',
-  //                   style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
+  //                   style: TextStyle(
+  //                     color: Colors.blue,
+  //                     decoration: TextDecoration.underline,
+  //                   ),
   //                 ),
   //               ),
   //               const SizedBox(height: 12),
 
-  //               if (response.nft != null) ...[
-  //                 const Text('🎨 NFT Minted:', style: TextStyle(fontWeight: FontWeight.bold)),
-  //                 Text('Token ID: ${response.nft!.tokenId}'),
-  //                 Text('Transaction: ${response.nft!.transactionHash.substring(0, 20)}...'),
-  //                 Text('Owner: ${response.nft!.ownerAddress.substring(0, 20)}...'),
+  //               if (result.nftInfo != null) ...[
+  //                 const Text(
+  //                   '🎨 NFT Minted:',
+  //                   style: TextStyle(fontWeight: FontWeight.bold),
+  //                 ),
+  //                 Text('Token ID: ${result.nftInfo!.tokenId}'),
+  //                 Text(
+  //                   'Transaction: ${result.nftInfo!.transactionHash.substring(0, 20)}...',
+  //                 ),
+  //                 Text(
+  //                   'Owner: ${result.nftInfo!.ownerAddress.substring(0, 20)}...',
+  //                 ),
+  //                 const SizedBox(height: 12),
+  //               ] else ...[
+  //                 const Text(
+  //                   '⚠️ NFT minting failed (insufficient gas), but certificate was created successfully!',
+  //                 ),
   //                 const SizedBox(height: 12),
   //               ],
 
-  //               if (response.supportingDocument != null) ...[
-  //                 const Text('📄 Supporting Document:', style: TextStyle(fontWeight: FontWeight.bold)),
+  //               if (result.supportingDocumentUrl != null) ...[
+  //                 const Text(
+  //                   '📄 Supporting Document:',
+  //                   style: TextStyle(fontWeight: FontWeight.bold),
+  //                 ),
   //                 InkWell(
-  //                   onTap: () => _launchUrl(response.supportingDocument!.gatewayUrl),
+  //                   onTap: () => _launchUrl(result.supportingDocumentUrl!),
   //                   child: Text(
   //                     'View Document',
-  //                     style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
+  //                     style: TextStyle(
+  //                       color: Colors.blue,
+  //                       decoration: TextDecoration.underline,
+  //                     ),
   //                   ),
   //                 ),
   //               ],
+
+  //               const SizedBox(height: 16),
+  //               const Text(
+  //                 '✅ Record saved to Firestore successfully!',
+  //                 style: TextStyle(
+  //                   color: Colors.green,
+  //                   fontWeight: FontWeight.bold,
+  //                 ),
+  //               ),
   //             ],
   //           ),
   //         ),
@@ -393,7 +572,7 @@ class _EnhancedRegistrationFormState
   //           ElevatedButton(
   //             onPressed: () {
   //               Navigator.of(context).pop();
-  //               _launchUrl(response.certificate.gatewayUrl);
+  //               _launchUrl(result.certificateUrl);
   //             },
   //             child: const Text('View Certificate'),
   //           ),
